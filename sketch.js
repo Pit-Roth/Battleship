@@ -1,7 +1,7 @@
 let clicksX = [];
 let clicksY = [];
-let finished = false
-let saved = false
+let finished = false;
+let saved = false;
 
 let board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -13,23 +13,31 @@ let board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
+
+let ships = [[6, 6, 0, 6, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 6, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 6, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 6, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 6, 0, 0],
+             [6, 6, 6, 6, 6, 0, 0, 6, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 6, 6, 6, 6, 0, 0, 0, 0, 0]];
+
 let size = board.length;
 
-let shipsX = [[0, 1],
-             [3, 3, 3],
-             [7, 7, 7],
-             [1, 2, 3, 4],
-             [0, 1, 2, 3, 4]]
-let shipsY = [[0, 0],
-              [0, 1, 2],
-              [3, 4, 5],
-              [9, 9, 9, 9],
-              [5, 5, 5, 5, 5]]
-
+// number of spots occupied by ships
 let ship_spots = 0
-for (i=0; i<shipsX.length; i++) {
-    ship_spots += shipsX[i].length
+for (let i=0; i<size; i++) {
+    for (let j=0; j<size; j++) {
+        if (ships[i][j] === 6) {
+            ship_spots += 1;
+        }
+    }
 }
+console.log('Spots occupied by ships: ' + ship_spots)
+
 
 function setup() {
     createCanvas(500, 500);
@@ -37,28 +45,24 @@ function setup() {
 
 function draw() {
     background(220);
-    let counter = 0
+    let counter = 0;
     for (let i=0; i<size; i++) {
         for (let j=0; j<size; j++) {
             // check if already clicked
-            let clicked = false
+            let clicked = false;
             for (let z=0; z<clicksX.length; z++) {
                 if (clicksX[z] === (i*50) && clicksY[z] === (j*50)) {
-                    board[j][i] = 1
-                    clicked = true
+                    board[j][i] = 1;
+                    clicked = true;
                 }
             }
             // draw squares
             if (clicked) {
-                let shipHit = false
-                for (let a=0; a<shipsX.length; a++) {
-                    for (let b=0; b<shipsX[a].length; b++) {
-                        if (shipsX[a][b] === (j) && shipsY[a][b] === (i)) { // richteg emgoen mat indexing an [x][y]
-                            board[j][i] = 2
-                            shipHit = true
-                            counter += 1
-                        }
-                    }
+                let shipHit = false;
+                if (ships[j][i] === 6) { // richteg emgoen mat indexing an [x][y]
+                    board[j][i] = 2;
+                    shipHit = true;
+                    counter += 1;
                 }
 
                 if (shipHit) {
@@ -84,9 +88,10 @@ function draw() {
 
     if (counter === ship_spots && !saved) {
         // saveCanvas('Canvas_x', 'jpg')
-        console.log('Possibly taking picture!')
-        console.log(board)
-        saved = true
+        console.log('Possibly taking picture!');
+        console.log(board);
+        document.getElementById('instructions').innerText = 'Congratulations, you have found all the ships!';
+        saved = true;
     }
 
 }
@@ -98,5 +103,17 @@ function mouseClicked() {
 }
 
 function valid(board) {
-    return 'pass'
+    let temp_ship_spots = 0
+    for (let i=0; i<size; i++) {
+        for (let j=0; j<size; j++) {
+            if (board[i][j] === 6) {
+                temp_ship_spots += 1;
+            }
+        }
+    }
+    if (temp_ship_spots === 17) {
+        return 'possibly valid'
+    } else {
+        return 'invalid'
+    }
 }
