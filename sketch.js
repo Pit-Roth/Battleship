@@ -1,7 +1,14 @@
 let clicksX = [];
 let clicksY = [];
+let scores = [];
 let finished = false;
 let saved = false;
+let shipSizes = shuffleArray([2, 3, 3, 4, 5]);
+let shipSpots = 0
+for (let i = 0; i<shipSizes.length; i++) {
+    shipSpots += shipSizes[i]
+}
+let n_ships = shipSizes.length
 
 let board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -14,33 +21,139 @@ let board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
 
-let ships = [[6, 6, 0, 6, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 6, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 6, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 6, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 6, 0, 0],
-             [6, 6, 6, 6, 6, 0, 0, 6, 0, 0],
+let ships = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 6, 6, 6, 6, 0, 0, 0, 0, 0]];
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
 
 let size = board.length;
 
 // number of spots occupied by ships
-let ship_spots = 0
-for (let i=0; i<size; i++) {
-    for (let j=0; j<size; j++) {
-        if (ships[i][j] === 6) {
-            ship_spots += 1;
+function countShips(board) {
+    let ship_spots = 0
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (board[i][j] === 6) {
+                ship_spots += 1;
+            }
         }
     }
+    console.log('Spots occupied by ships: ' + ship_spots);
+    console.log('If the number above is not 17: something went wrong');
 }
-console.log('Spots occupied by ships: ' + ship_spots)
+
+function choose(choices) {
+    let index = Math.floor(Math.random() * choices.length);
+    return choices[index];
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array
+}
+
+function valid(board) {
+    let temp_ship_spots = 0
+    for (let i=0; i<size; i++) {
+        for (let j=0; j<size; j++) {
+            if (board[i][j] === 6) {
+                temp_ship_spots += 1;
+            }
+        }
+    }
+    if (temp_ship_spots === 17) {
+        return 'possibly valid'
+    } else {
+        return 'invalid'
+    }
+}
+
+function stats(board) {
+    let shots = 0
+    for (let i=0; i<size; i++) {
+        for (let j=0; j<size; j++) {
+            if (board[i][j] === 1 || board[i][j] === 2) {
+                shots += 1;
+            }
+        }
+    }
+    return shots
+}
+
+function placeShips(ship_board, ship_sizes) {
+    console.log('Randomly placing ship...');
+    let temp = 0;
+    let temp_size = ship_board.length;
+    while (temp <= n_ships) {
+        let orientation = choose(['horizontal', 'vertical']);
+        let ship_size = ship_sizes.pop();
+        let possibilities = [];
+        if (orientation === 'horizontal') {
+            for (let i = 0; i<temp_size; i++) {
+                for (let j = 0; j<temp_size; j++) {
+                    let fit = true;
+                    for (let k = 0; k<ship_size; k++) {
+                        if ((i+k)<temp_size) {
+                            if (ship_board[j][i+k] !== 0) {
+                                fit = false;
+                            }
+                        } else {
+                            fit = false;
+                        }
+                    }
+                    if (fit) {
+                        possibilities.push([j, i])
+                    }
+                }
+            }
+            let chosen = choose(possibilities)
+            for (let l = 0; l<ship_size; l++) {
+                ship_board[chosen[0]][chosen[1]+l] = 6
+            }
+        } else {
+            for (let i = 0; i<temp_size; i++) {
+                for (let j = 0; j<temp_size; j++) {
+                    let fit = true;
+                    for (let k = 0; k<ship_size; k++) {
+                        if ((j+k)<temp_size) {
+                            if (ship_board[j+k][i] !== 0) {
+                                fit = false;
+                            }
+                        } else {
+                            fit = false;
+                        }
+                    }
+                    if (fit) {
+                        possibilities.push([j, i])
+                    }
+                }
+            }
+            let chosen = choose(possibilities)
+            for (let l = 0; l<ship_size; l++) {
+                ship_board[chosen[0]+l][chosen[1]] = 6
+            }
+        }
+        temp += 1
+    }
+    return ship_board
+}
 
 
+// p5.js
 function setup() {
     createCanvas(500, 500);
+    ships = placeShips(ships, shipSizes)
+    //console.log(ships)
+    countShips(ships)
 }
 
 function draw() {
@@ -86,34 +199,18 @@ function draw() {
         }
     }
 
-    if (counter === ship_spots && !saved) {
+    if (counter === shipSpots && !saved) {
         // saveCanvas('Canvas_x', 'jpg')
         console.log('Possibly taking picture!');
         console.log(board);
-        document.getElementById('instructions').innerText = 'Congratulations, you have found all the ships!';
+        document.getElementById('instructions').innerText = 'Congratulations, you have found all the ships! (It took you: ' + stats(board) + ' shots)';
+        // document.getElementById('average').innerText = 'Average: ' + '';
         saved = true;
     }
-
 }
 
 function mouseClicked() {
     clicksX.push(Math.floor(mouseX / 50) * 50);
     clicksY.push(Math.floor(mouseY / 50) * 50);
     console.log(clicksX, clicksY);
-}
-
-function valid(board) {
-    let temp_ship_spots = 0
-    for (let i=0; i<size; i++) {
-        for (let j=0; j<size; j++) {
-            if (board[i][j] === 6) {
-                temp_ship_spots += 1;
-            }
-        }
-    }
-    if (temp_ship_spots === 17) {
-        return 'possibly valid'
-    } else {
-        return 'invalid'
-    }
 }
